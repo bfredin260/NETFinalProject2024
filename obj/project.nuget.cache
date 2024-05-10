@@ -1,8 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "4P2bAqA/0SekAcF2uQks2cH50oZJAwWfTFq4QYg3KbMLdQIST6cWax3kA99Q+3vR+TA5w584tDJkBA/g8FWkVQ==",
+  "dgSpecHash": "8VTmj3ggFth3sKn7xE1FcTjanhj7+wvtQ4duZ9WKw1KbHUIpZ4kJ31TwgKgxdDPGB2veVl7FzUoYqLLjU6QhfA==",
   "success": true,
   "projectFilePath": "/Users/b260fredin/Documents/WCTC/Term 4/NET Databases/Module 12/FredinFinalProject/FredinFinalProject.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/Users/b260fredin/.nuget/packages/nlog/5.1.1/nlog.5.1.1.nupkg.sha512"
+  ],
   "logs": []
 }
