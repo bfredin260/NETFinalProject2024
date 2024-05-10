@@ -2,3 +2,4 @@ bin/
 obj/
 *.sln
 appsettings.json
+.DS_Store
