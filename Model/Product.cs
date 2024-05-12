@@ -25,10 +25,14 @@ namespace NWConsole.Model
         public short? UnitsInStock { get; set; }
         public short? UnitsOnOrder { get; set; }
         public short? ReorderLevel { get; set; }
+
+        [Required(ErrorMessage = "Is this product discontinued or not?")]
         public bool Discontinued { get; set; }
 
         [Required(ErrorMessage = "Product needs Category")]
         public virtual Category Category { get; set; }
+
+        [Required(ErrorMessage = "Needs a Supplier")]
         public virtual Supplier Supplier { get; set; }
         public virtual ICollection<OrderDetail> OrderDetails { get; set; }
     }
