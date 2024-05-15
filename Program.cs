@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Linq.Expressions;
 
 Console.WriteLine("Hello World!");
 // See https://aka.ms/new-console-template for more information
@@ -27,6 +28,7 @@ try
         Console.WriteLine("4) Display all Categories and their related products");
         Console.WriteLine("5) Add new Product");
         Console.WriteLine("6) Edit Product");
+        Console.WriteLine("7) Display Products");
         Console.WriteLine("\"q\" to quit");
         choice = Console.ReadLine();
         Console.Clear();
@@ -193,7 +195,7 @@ try
                 Console.WriteLine($"{pr.ProductId}) {pr.ProductName}");
             }
             string productChoice = Console.ReadLine();
-            Product product = new Product();
+            Product product;
             try {
                 if(db.Products.Any(p => p.ProductId == int.Parse(productChoice))){
                     product = db.Products.FirstOrDefault(p => p.ProductId == int.Parse(productChoice));
@@ -351,6 +353,72 @@ try
                     
             } catch(Exception e) {
                 logger.Error(e.Message);
+            }
+        } else if(choice == "7") {
+            Console.WriteLine("Which products would you like to display?");
+            Console.WriteLine("1) All products");
+            Console.WriteLine("2) Discontinued products");
+            Console.WriteLine("3) Active products (not discontinued)");
+
+            string dispProdChoice = Console.ReadLine();
+            IQueryable<Product> query = null;
+            if(dispProdChoice == "1") {
+                query = db.Products;
+                foreach(Product p in db.Products) {
+                    string discontinuedStatus = p.Discontinued ? "Discontinued" : "Active";
+                    Console.WriteLine($"{p.ProductId}) {p.ProductName} ({discontinuedStatus})");
+                }
+            } else if(dispProdChoice == "2") {
+                query =
+                    from p in db.Products 
+                    where p.Discontinued 
+                    select p;
+                foreach(Product p in query) {
+                    Console.WriteLine($"{p.ProductId}) {p.ProductName}");
+                }
+            } else if(dispProdChoice == "3") {
+                query =
+                    (from p in db.Products 
+                    where !p.Discontinued 
+                    select p);
+                foreach(Product p in query) {
+                    Console.WriteLine($"{p.ProductId}) {p.ProductName}");
+                }
+            } else {
+                logger.Error("Invalid selection, no products displayed.");
+            }
+
+            if(dispProdChoice == "1" || dispProdChoice == "2" || dispProdChoice == "3") {
+                Console.WriteLine("\nSelect a product to view or any key to return to main prompt:");
+                string specProductChoice = Console.ReadLine();
+                try {
+                    int idComparison = int.Parse(specProductChoice);
+                    Product pr;
+                    pr = query.FirstOrDefault(p => p.ProductId == idComparison);
+                    Console.WriteLine($"{pr.ProductId}. {pr.ProductName} {{");
+                    try {
+                        try {
+                            Console.WriteLine($"\tCategory: {db.Categories.FirstOrDefault(c => c.CategoryId == pr.CategoryId).CategoryName}");
+                        } catch(Exception e) {
+                            logger.Error("Error finding product's Category.");
+                        }
+                        try {
+                            Console.WriteLine($"\tSupplier: {db.Suppliers.FirstOrDefault(s => s.SupplierId == pr.SupplierId).CompanyName}");
+                        } catch(Exception e) {
+                            logger.Error("Error finding product's Supplier.");
+                        }
+                        Console.WriteLine($"\n\tQuantity Per Unit: {pr.QuantityPerUnit}");
+                        Console.WriteLine($"\tUnit Price: ${pr.UnitPrice:0:00}");
+                        Console.WriteLine($"\tUnits in Stock: {pr.UnitsInStock}");
+                        Console.WriteLine($"\tUnits on Order: {pr.UnitsOnOrder}");
+                        Console.WriteLine($"\tReorder Level: {pr.ReorderLevel}");
+                        Console.WriteLine($"\tDiscontinued(?): {pr.Discontinued}\n}}");
+                    } catch(Exception e) {
+                        logger.Error(e.Message);
+                    }
+                } catch(Exception) {
+                    logger.Info("No product selected.");
+                }
             }
         }
         Console.WriteLine();
