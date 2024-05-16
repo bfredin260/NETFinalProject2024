@@ -84,7 +84,7 @@ try
                     Console.WriteLine($"{c.CategoryName} - {c.Description} {{");
 
                     // query selets all active products in this category
-                    var pQuery = from p in c.Products where !p.Discontinued orderby p.ProductId select p;
+                    var pQuery = c.Products.Where(p => !p.Discontinued).OrderBy(p => p.ProductId);
 
                     Console.ForegroundColor = ConsoleColor.Green;
 
