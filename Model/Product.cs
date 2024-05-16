@@ -12,17 +12,20 @@ namespace NWConsole.Model
         }
 
         public int ProductId { get; set; }
+
         [Required(ErrorMessage = "Needs a name")]
+        [MaxLength(40, ErrorMessage = $"Product Name can't be longer than 40 characters!")]
         public string ProductName { get; set; }
+
         [Required(ErrorMessage = "Needs a Supplier")]
         public int? SupplierId { get; set; }
+
         [Required(ErrorMessage = "Product needs Category")]
         public int? CategoryId { get; set; }
 
-        [Required(ErrorMessage = "Enter quantity per unit")]
+        [MaxLength(40, ErrorMessage = "Quantity Per Unit can't be longer than 40 characters!")]
         public string QuantityPerUnit { get; set; }
 
-        [Required(ErrorMessage = "Enter unit price")]
         public decimal? UnitPrice { get; set; }
         public short? UnitsInStock { get; set; }
         public short? UnitsOnOrder { get; set; }

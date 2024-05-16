@@ -12,7 +12,9 @@ namespace NWConsole.Model
         }
 
         public int CategoryId { get; set; }
-        [Required(ErrorMessage = "YO - Enter the name!")]
+
+        [Required(ErrorMessage = "Enter Category Name!")]
+        [MaxLength(15, ErrorMessage = "Category Name can't be longer than 15 characters!")]
         public string CategoryName { get; set; }
         public string Description { get; set; }
 
