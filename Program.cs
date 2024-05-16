@@ -2,6 +2,7 @@
 using NWConsole.Model;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 
 Console.Clear();
 Console.WriteLine("Hello World!");
@@ -32,13 +33,15 @@ try
         Console.WriteLine("6) Display Products");
         Console.WriteLine("7) Add new Product");
         Console.WriteLine("8) Edit Product");
-        Console.WriteLine("\"q\" to quit");
+        Console.WriteLine("\n*) Delete Category");
+        Console.WriteLine("&) Delete Product");
+        Console.WriteLine("\n\"q\" to quit");
 
         choice = Console.ReadLine();
 
         Console.Clear();
 
-        logger.Info($"Option {choice} selected");
+        logger.Info($"Option '{choice}' selected");
 
         if(choice == "1")
         {
@@ -138,7 +141,7 @@ try
 
                 Console.Clear();
 
-                logger.Info($"CategoryId {id} selected");
+                logger.Info($"CategoryId '{id}' selected");
 
                 Console.ForegroundColor = ConsoleColor.Magenta;
 
@@ -198,7 +201,7 @@ try
 
                 Console.Clear();
 
-                logger.Info($"Category Name set to \"{category.CategoryName}\"");
+                logger.Info($"Category Name set to '{category.CategoryName}'");
 
                 Console.WriteLine("\nEnter the Category Description:");
 
@@ -207,7 +210,7 @@ try
 
                 Console.Clear();
 
-                logger.Info($"Category Description set to \"{category.Description}\"");
+                logger.Info($"Category Description set to '{category.Description}'");
 
                 // validate category
                 ValidationContext context = new(category, null, null);
@@ -272,15 +275,13 @@ try
                 Console.WriteLine("\nWhich category do you want to edit?");
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"\n{db.Categories.Count()} categories returned");
+                Console.WriteLine($"\n{query.Count()} categories returned");
 
                 Console.ForegroundColor = ConsoleColor.DarkRed;
 
                 // display all categories
-                foreach(Category c in db.Categories) 
-                {
-                    Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
-                }
+                foreach(Category c in query) Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
+                
                 Console.ForegroundColor = ConsoleColor.White;
 
                 // user selects which category to edit
@@ -288,7 +289,7 @@ try
 
                 Console.Clear();
 
-                logger.Info($"CategoryId {cId} selected");
+                logger.Info($"CategoryId '{cId}' selected");
 
                 // selects the category that the user chose
                 if(query.Any(c => c.CategoryId == cId))
@@ -300,13 +301,13 @@ try
                     Console.WriteLine("2) Description");
 
                     // user selects which field of the selected category they want to edit 
-                    string editCatField = Console.ReadLine();
+                    string cField = Console.ReadLine();
 
                     Console.Clear();
 
-                    logger.Info($"Option {editCatField} selected");
+                    logger.Info($"Option '{cField}' selected");
 
-                    if(editCatField == "1") 
+                    if(cField == "1") 
                     {
                         // -- CATEGORY NAME --
 
@@ -314,7 +315,7 @@ try
                         string oldName = category.CategoryName;
 
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"\nCurrent value: {oldName}");
+                        Console.WriteLine($"\nCurrent value: '{oldName}'");
 
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("\nEnter a new Category Name:");
@@ -374,7 +375,7 @@ try
                             }
                         }
                     } 
-                    else if(editCatField == "2") 
+                    else if(cField == "2") 
                     {
                         // -- CATEGORY DESCRIPTION --
 
@@ -382,7 +383,7 @@ try
                         string oldDesc = category.Description;
 
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"\nCurrent value: {oldDesc}");
+                        Console.WriteLine($"\nCurrent value: '{oldDesc}'");
 
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("\nEnter a new Description:");
@@ -471,7 +472,7 @@ try
 
                 Console.Clear();
 
-                logger.Info($"Option {dChoice} selected");
+                logger.Info($"Option '{dChoice}' selected");
 
                 // updates query to only contain the necessary products
                 if(dChoice == "1") 
@@ -480,10 +481,10 @@ try
                 }
 
                 // -- DISCONTINUED PRODUCTS --
-                else if(dChoice == "2") query = from p in query where p.Discontinued orderby p.ProductId select p;
+                else if(dChoice == "2") query = query.Where(p => p.Discontinued).OrderBy(p => p.ProductId);
                 
                 // -- ACTIVE PRODUCTS --
-                else if(dChoice == "3") query = from p in query where !p.Discontinued orderby p.ProductId select p;
+                else if(dChoice == "3") query = query.Where(p => !p.Discontinued).OrderBy(p => p.ProductId);
 
                 // makes sure selection is valid before running this section
                 if(dChoice == "1" || dChoice == "2" || dChoice == "3") 
@@ -511,7 +512,7 @@ try
 
                     Console.Clear();
 
-                    logger.Info($"ProductId {pId} selected");
+                    logger.Info($"ProductId '{pId}' selected");
 
                     // checks to make sure the product chosen exists before continuing
                     if(query.Any(p => p.ProductId == pId)) 
@@ -601,7 +602,7 @@ try
 
                 Console.Clear();
 
-                logger.Info($"Product Name set to \"{product.ProductName}\"");
+                logger.Info($"Product Name set to '{product.ProductName}'");
 
                 Console.WriteLine("\nWhat category is this product in?");
 
@@ -634,7 +635,7 @@ try
                     product.Category = cQuery.FirstOrDefault(c => c.CategoryId == catId);
                     product.CategoryId = catId;
 
-                    logger.Info($"Product's Category set to \"{product.Category.CategoryName}\"");
+                    logger.Info($"Product's Category set to '{db.Categories.FirstOrDefault(c => c.CategoryId == product.CategoryId).CategoryName}'");
                     
                     Console.WriteLine("\nWho supplies this product?");
 
@@ -666,7 +667,7 @@ try
                         product.Supplier = sQuery.FirstOrDefault(s => s.SupplierId == supId);
                         product.SupplierId = supId;
 
-                        logger.Info($"Product's Supplier set to \"{sQuery.FirstOrDefault(s => s.SupplierId == product.SupplierId).CompanyName}\"");
+                        logger.Info($"Product's Supplier set to '{sQuery.FirstOrDefault(s => s.SupplierId == product.SupplierId).CompanyName}'");
                         
                         Console.WriteLine("\nEnter Quantity Per Unit:");
 
@@ -676,7 +677,7 @@ try
 
                         Console.Clear();
 
-                        logger.Info($"Product's Quantity Per Unit set to \"{product.QuantityPerUnit}\"");
+                        logger.Info($"Product's Quantity Per Unit set to '{product.QuantityPerUnit}'");
 
                         Console.WriteLine("\nEnter Price Per Unit:");
 
@@ -687,7 +688,7 @@ try
 
                         product.UnitPrice = uP;
 
-                        logger.Info($"Product's Unit Price set to \"{product.UnitPrice}\"");
+                        logger.Info($"Product's Unit Price set to '{product.UnitPrice}'");
 
                         Console.WriteLine("\nIs this product discontinued? (y/n):");
 
@@ -699,7 +700,7 @@ try
                         if(discontinued == "y") product.Discontinued = true;
                         else if(discontinued == "n") product.Discontinued = false;
 
-                        logger.Info($"Product's Discontinued Status set to \"{product.Discontinued}\"");
+                        logger.Info($"Product's Discontinued Status set to '{product.Discontinued}'");
 
                         // validate the new product
                         ValidationContext context = new(product, null, null);
@@ -763,7 +764,7 @@ try
                 else
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    logger.Error($"There is no Category with Id \"{catId}\"");
+                    logger.Error($"There is no Category with Id '{catId}'");
                     Console.ForegroundColor = ConsoleColor.White;
                 }
             } 
@@ -801,7 +802,7 @@ try
 
                 Console.Clear();
 
-                logger.Info($"ProductId {pId} selected");
+                logger.Info($"ProductId '{pId}' selected");
 
                 // checks if the product exists at the given id before continuing
                 if(query.Any(p => p.ProductId == pId))
@@ -823,7 +824,7 @@ try
 
                     Console.Clear();
 
-                    logger.Info($"Option {pField} selected");
+                    logger.Info($"Option '{pField}' selected");
 
                     if(pField == "1") 
                     {
@@ -833,7 +834,7 @@ try
                         string oldName = product.ProductName;
 
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"\nCurrent value: {oldName}");
+                        Console.WriteLine($"\nCurrent value: '{oldName}'");
 
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("\nEnter a new Product Name:");
@@ -903,7 +904,7 @@ try
                         string oldQpu = product.QuantityPerUnit;
 
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"\nCurrent value: {oldQpu}");
+                        Console.WriteLine($"\nCurrent value: '{oldQpu}'");
 
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("\nEnter a new Quantity Per Unit:");
@@ -960,7 +961,7 @@ try
                         decimal? oldUp = product.UnitPrice;
 
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"\nCurrent value: {oldUp:0.00}");
+                        Console.WriteLine($"\nCurrent value: '${oldUp:0.00}'");
 
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("\nEnter a new Unit Price:");
@@ -1016,7 +1017,7 @@ try
                         short? oldUis = product.UnitsInStock;
 
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"\nCurrent value: {oldUis}");
+                        Console.WriteLine($"\nCurrent value: '{oldUis}'");
 
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("\nEnter new amount of Units in Stock:");
@@ -1072,7 +1073,7 @@ try
                         bool oldDisc = product.Discontinued;
 
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"\nCurrent value: {product.Discontinued}");
+                        Console.WriteLine($"\nCurrent value: '{product.Discontinued}'");
 
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("\nIs this product discontinued? (y/n):");
@@ -1146,7 +1147,7 @@ try
                         int? oldCId = product.CategoryId;
 
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"\nCurrent value: {product.Category.CategoryName}");
+                        Console.WriteLine($"\nCurrent value: '{cQuery.FirstOrDefault(c => c.CategoryId == product.CategoryId).CategoryName}'");
 
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("\nWhich category does this product belong in?");
@@ -1232,7 +1233,7 @@ try
                         int? oldSId = product.SupplierId;
 
                         Console.ForegroundColor = ConsoleColor.Blue;
-                        Console.WriteLine($"\nCurrent value: {sQuery.FirstOrDefault(s => s.SupplierId == product.SupplierId).CompanyName}");
+                        Console.WriteLine($"\nCurrent value: '{sQuery.FirstOrDefault(s => s.SupplierId == product.SupplierId).CompanyName}'");
 
                         Console.ForegroundColor = ConsoleColor.White;
                         Console.WriteLine("\nWho supplies this product?");
@@ -1342,6 +1343,112 @@ try
                 Console.ForegroundColor = ConsoleColor.White;
             }
         } 
+        else if(choice == "*")
+        {
+            // -- DELETE CATEGORY --
+            try
+            {
+                // query gets all categories
+                var query = db.Categories.Where(c => c.Products.Count == 0).OrderBy(c => c.CategoryId);
+
+                Console.WriteLine("\nWhich category would you like to delete?");
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"\n{query.Count()} empty categories found");
+
+                Console.ForegroundColor = ConsoleColor.Magenta;
+
+                // displays all categories
+                foreach(Category c in query) Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
+
+                Console.ForegroundColor = ConsoleColor.White;
+
+                // user selects which category they want to delete
+                int cId = int.Parse(Console.ReadLine());
+
+                Console.Clear();
+
+                logger.Info($"CategoryId '{cId}' selected");
+
+                // checks to make sure that a category exists at the given Id before continuing
+                if(query.Any(c => c.CategoryId == cId))
+                {
+                    // gets category that the user wants to delete
+                    Category category = query.FirstOrDefault(c => c.CategoryId == cId);
+
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+
+                    // verifies that the user WANTS to delete this category
+                    Console.WriteLine($"\n!!! Are you sure you want to delete '{category.CategoryName}'? !!!");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine($"\ny) Delete {category.CategoryName}");
+                    Console.WriteLine("n) Never mind!");
+
+                    // user selects if they REALLY want to delete the category
+                    string delChoice = Console.ReadLine();
+
+                    Console.Clear();
+
+                    logger.Info($"Option '{delChoice}' selected");
+
+                    if(delChoice == "y")
+                    {
+                        // -- YES, DELETE --
+                        Console.WriteLine($"\nDeleting category '{category.CategoryName}'...\n");
+                        try
+                        {
+                            // delete the category and save changes to database
+                            db.Remove(category);
+                            db.SaveChanges();
+
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            logger.Info($"Category '{category.CategoryName}' successfully deleted");
+
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                        catch(Exception e)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            logger.Error($"Error removing category '{category.CategoryName}' from database: {e.Message}");
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                    }
+                    else if(delChoice == "n")
+                    {
+                        // -- NO, DON'T DELETE --
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine($"Category '{category.CategoryName}' was not deleted");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                    else
+                    {
+                        // -- INVALID SELECTION --
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        logger.Info($"Invalid selection, category '{category.CategoryName}' was not deleted");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                }
+                else 
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    logger.Error("There are no categories with that Id");
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+            }
+            catch(FormatException)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                logger.Error("Invalid selection!");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
+        }
+        else if(choice == "&")
+        {
+            // -- DELETE PRODUCT
+        }
         else if(choice == "q") 
         {
             // -- QUIT --
@@ -1351,7 +1458,7 @@ try
         {
             // -- INVALID SELECTION --
             Console.ForegroundColor = ConsoleColor.Red;
-            logger.Error($"\"{choice}\" is not a valid option!");
+            logger.Error($"'{choice}' is not a valid option!");
             Console.ForegroundColor = ConsoleColor.White;
         }
         
