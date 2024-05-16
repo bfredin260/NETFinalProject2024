@@ -1348,93 +1348,105 @@ try
             // -- DELETE CATEGORY --
             try
             {
-                // query gets all categories
+                // query gets all categories with no products
                 var query = db.Categories.Where(c => c.Products.Count == 0).OrderBy(c => c.CategoryId);
 
-                Console.WriteLine("\nWhich category would you like to delete?");
-
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"\n{query.Count()} empty categories found");
-
-                Console.ForegroundColor = ConsoleColor.Magenta;
-
-                // displays all categories
-                foreach(Category c in query) Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
-
-                Console.ForegroundColor = ConsoleColor.White;
-
-                // user selects which category they want to delete
-                int cId = int.Parse(Console.ReadLine());
-
-                Console.Clear();
-
-                logger.Info($"CategoryId '{cId}' selected");
-
-                // checks to make sure that a category exists at the given Id before continuing
-                if(query.Any(c => c.CategoryId == cId))
+                // checks to make sure that there are any empty categories first
+                if(query.Any())
                 {
-                    // gets category that the user wants to delete
-                    Category category = query.FirstOrDefault(c => c.CategoryId == cId);
 
-                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("\nWhich category would you like to delete?");
 
-                    // verifies that the user WANTS to delete this category
-                    Console.WriteLine($"\n!!! Are you sure you want to delete '{category.CategoryName}'? !!!");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"\n{query.Count()} empty categories found");
+
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+
+                    // displays all categories
+                    foreach(Category c in query) Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
 
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine($"\ny) Delete {category.CategoryName}");
-                    Console.WriteLine("n) Never mind!");
 
-                    // user selects if they REALLY want to delete the category
-                    string delChoice = Console.ReadLine();
+                    // user selects which category they want to delete
+                    int cId = int.Parse(Console.ReadLine());
 
                     Console.Clear();
 
-                    logger.Info($"Option '{delChoice}' selected");
+                    logger.Info($"CategoryId '{cId}' selected");
 
-                    if(delChoice == "y")
+                    // checks to make sure that a category exists at the given Id before continuing
+                    if(query.Any(c => c.CategoryId == cId))
                     {
-                        // -- YES, DELETE --
-                        Console.WriteLine($"\nDeleting category '{category.CategoryName}'...\n");
-                        try
-                        {
-                            // delete the category and save changes to database
-                            db.Remove(category);
-                            db.SaveChanges();
+                        // gets category that the user wants to delete
+                        Category category = query.FirstOrDefault(c => c.CategoryId == cId);
 
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            logger.Info($"Category '{category.CategoryName}' successfully deleted");
+                        Console.ForegroundColor = ConsoleColor.Yellow;
 
-                            Console.ForegroundColor = ConsoleColor.White;
-                        }
-                        catch(Exception e)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            logger.Error($"Error removing category '{category.CategoryName}' from database: {e.Message}");
-                            Console.ForegroundColor = ConsoleColor.White;
-                        }
-                    }
-                    else if(delChoice == "n")
-                    {
-                        // -- NO, DON'T DELETE --
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine($"Category '{category.CategoryName}' was not deleted");
+                        // verifies that the user WANTS to delete this category
+                        Console.WriteLine($"\n!!! Are you sure you want to delete '{category.CategoryName}'? !!!");
 
                         Console.ForegroundColor = ConsoleColor.White;
-                    }
-                    else
-                    {
-                        // -- INVALID SELECTION --
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        logger.Info($"Invalid selection, category '{category.CategoryName}' was not deleted");
+                        Console.WriteLine($"\ny) Delete {category.CategoryName}");
+                        Console.WriteLine("n) Never mind!");
 
+                        // user selects if they REALLY want to delete the category
+                        string delChoice = Console.ReadLine();
+
+                        Console.Clear();
+
+                        logger.Info($"Option '{delChoice}' selected");
+
+                        if(delChoice == "y")
+                        {
+                            // -- YES, DELETE --
+                            Console.WriteLine($"\nDeleting category '{category.CategoryName}'...\n");
+                            try
+                            {
+                                // delete the category and save changes to database
+                                db.Remove(category);
+                                db.SaveChanges();
+
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                logger.Info($"Category '{category.CategoryName}' successfully deleted");
+
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                            catch(Exception e)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                logger.Error($"Error removing category '{category.CategoryName}' from database: {e.Message}");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                        }
+                        else if(delChoice == "n")
+                        {
+                            // -- NO, DON'T DELETE --
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"Category '{category.CategoryName}' was not deleted");
+
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                        else
+                        {
+                            // -- INVALID SELECTION --
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            logger.Info($"Invalid selection, category '{category.CategoryName}' was not deleted");
+
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                    }
+                    else 
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        logger.Error("There are no categories with that Id");
                         Console.ForegroundColor = ConsoleColor.White;
                     }
                 }
-                else 
+                else
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    logger.Error("There are no categories with that Id");
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    logger.Info("There are no empty categories");
+
                     Console.ForegroundColor = ConsoleColor.White;
                 }
             }
@@ -1448,6 +1460,115 @@ try
         else if(choice == "&")
         {
             // -- DELETE PRODUCT
+            try
+            {
+                // query gets all products
+                var query = db.Products.Where(p => p.OrderDetails.Count == 0).OrderBy(p => p.ProductId);
+
+                // checks to make sure if any products with no order details exist first
+                if(query.Any())
+                {
+                    Console.WriteLine("\nWhich product would you like to delete?");
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine($"\n{query.Count()} products with no related orders found");
+
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+
+                    // displays all products
+                    foreach(Product p in query) Console.WriteLine($"{p.ProductId}) {p.ProductName}");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    // user selects which product they want to delete
+                    int pId = int.Parse(Console.ReadLine());
+
+                    Console.Clear();
+
+                    logger.Info($"ProductId '{pId}' selected");
+
+                    // checks to make sure that a product exists at the given Id before continuing
+                    if(query.Any(p => p.ProductId == pId))
+                    {
+                        // gets product that the user wants to delete
+                        Product product = query.FirstOrDefault(p => p.ProductId == pId);
+
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+
+                        // verifies that the user WANTS to delete this product
+                        Console.WriteLine($"\n!!! Are you sure you want to delete '{product.ProductName}'? !!!");
+
+                        Console.ForegroundColor = ConsoleColor.White;
+                        Console.WriteLine($"\ny) Delete {product.ProductName}");
+                        Console.WriteLine("n) Never mind!");
+
+                        // user selects if they REALLY want to delete the product
+                        string delChoice = Console.ReadLine();
+
+                        Console.Clear();
+
+                        logger.Info($"Option '{delChoice}' selected");
+
+                        if(delChoice == "y")
+                        {
+                            // -- YES, DELETE --
+                            Console.WriteLine($"\nDeleting product '{product.ProductName}'...\n");
+                            try
+                            {
+                                // delete the product and save changes to database
+                                db.Remove(product);
+                                db.SaveChanges();
+
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                logger.Info($"Product '{product.ProductName}' successfully deleted");
+
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                            catch(Exception e)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                logger.Error($"Error removing product '{product.ProductName}' from database: {e.Message}");
+                                Console.ForegroundColor = ConsoleColor.White;
+                            }
+                        }
+                        else if(delChoice == "n")
+                        {
+                            // -- NO, DON'T DELETE --
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine($"Product '{product.ProductName}' was not deleted");
+
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                        else
+                        {
+                            // -- INVALID SELECTION --
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            logger.Info($"Invalid selection, product '{product.ProductName}' was not deleted");
+
+                            Console.ForegroundColor = ConsoleColor.White;
+                        }
+                    }
+                    else 
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        logger.Error("There are no categories with that Id");
+                        Console.ForegroundColor = ConsoleColor.White;
+                    }
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    logger.Info("There are no products with no related orders");
+
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+            }
+            catch(FormatException)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                logger.Error("Invalid selection!");
+                Console.ForegroundColor = ConsoleColor.White;
+            }
         }
         else if(choice == "q") 
         {
