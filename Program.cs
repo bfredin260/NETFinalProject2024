@@ -55,10 +55,7 @@ try
                 Console.WriteLine($"\n{query.Count()} categories returned");
 
                 Console.ForegroundColor = ConsoleColor.Magenta;
-                foreach(Category c in query) 
-                {
-                    Console.WriteLine($"{c.CategoryName} - {c.Description}");
-                }
+                foreach(Category c in query) Console.WriteLine($"{c.CategoryName} - {c.Description}");
 
                 Console.ForegroundColor = ConsoleColor.White;
             } 
@@ -130,10 +127,8 @@ try
                 Console.ForegroundColor = ConsoleColor.Magenta;
 
                 // displays all categories
-                foreach (Category c in query) 
-                {
-                    Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
-                }
+                foreach (Category c in query) Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
+    
                 Console.ForegroundColor = ConsoleColor.White;
                 
                 // user selects which category to view a product from
@@ -152,7 +147,7 @@ try
                 Console.WriteLine($"\n{category.CategoryName} - {category.Description} {{");
 
                 // query gets all active products in this category
-                var pQuery = from p in category.Products where !p.Discontinued orderby p.ProductId select p;
+                var pQuery = category.Products.Where(p => !p.Discontinued).OrderBy(p => p.ProductId);
 
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"\t{pQuery.Count()} products returned");
@@ -227,7 +222,6 @@ try
                         results.Add(new ValidationResult("Name exists", new string[] { "CategoryName" }));
                     }
                     else
-                    {
                         try
                         {
                             // add category to database and save changes
@@ -245,15 +239,12 @@ try
                             logger.Error($"Error saving category to database: {e.Message}");
                             Console.ForegroundColor = ConsoleColor.White;
                         }
-                    }
                 }
                 if (!isValid)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    foreach (var result in results)
-                    {
-                        logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                    }
+                    foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                     Console.ForegroundColor = ConsoleColor.White;
                 }
             }
@@ -265,7 +256,6 @@ try
             }
         }
         else if(choice == "5")
-        {
             // -- EDIT CATEGORY --
             try 
             {
@@ -343,7 +333,6 @@ try
 
                             var isValid = Validator.TryValidateObject(category, context, results, true);
                             if (isValid)
-                            {
                                 try
                                 {
                                     // save changes to database 
@@ -362,15 +351,14 @@ try
                                     logger.Error($"Error saving category to database: {e.Message}");
                                     Console.ForegroundColor = ConsoleColor.White;
                                 }
-                            } else {
+                            else 
+                            {
                                 // if category is invalid, set CategoryName back to original
                                 category.CategoryName = oldName;
 
                                 Console.ForegroundColor = ConsoleColor.Red;
-                                foreach (var result in results)
-                                {
-                                    logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                                }
+                                foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
                         }
@@ -399,7 +387,6 @@ try
 
                         var isValid = Validator.TryValidateObject(category, context, results, true);
                         if (isValid)
-                        {
                             try
                             {
                                 // save changes to database
@@ -418,17 +405,14 @@ try
                                 logger.Error($"Error saving category to database: {e.Message}");
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
-                        } 
                         else 
                         {
                             // if category is invalid, set Description back to original
                             category.Description = oldDesc;
 
                             Console.ForegroundColor = ConsoleColor.Red;
-                            foreach (var result in results)
-                            {
-                                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                            }
+                            foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                             Console.ForegroundColor = ConsoleColor.White;
                         }
                     } 
@@ -453,7 +437,6 @@ try
                 logger.Error("Invalid selection");
                 Console.ForegroundColor = ConsoleColor.White;
             }
-        }
         else if(choice == "6") 
         {
             // -- DISPLAY PRODUCTS --
@@ -476,9 +459,7 @@ try
 
                 // updates query to only contain the necessary products
                 if(dChoice == "1") 
-                {
-                    // nothing needs to be done since the query is already defined above
-                }
+                { /* nothing needs to be done since the query is already defined above */ }
 
                 // -- DISCONTINUED PRODUCTS --
                 else if(dChoice == "2") query = query.Where(p => p.Discontinued).OrderBy(p => p.ProductId);
@@ -589,7 +570,6 @@ try
             }
         } 
         else if(choice == "7")
-        {
             // -- ADD NEW PRODUCT --
             try 
             {
@@ -616,10 +596,7 @@ try
                 Console.ForegroundColor = ConsoleColor.DarkRed;
 
                 // displays all categories
-                foreach(Category c in cQuery) 
-                {
-                    Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
-                }
+                foreach(Category c in cQuery) Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
 
                 Console.ForegroundColor = ConsoleColor.White;
 
@@ -649,10 +626,7 @@ try
                     Console.ForegroundColor = ConsoleColor.DarkRed;
 
                     // displays all suppliers
-                    foreach(Supplier s in sQuery) 
-                    {
-                        Console.WriteLine($"{s.SupplierId}) {s.CompanyName}");
-                    }
+                    foreach(Supplier s in sQuery) Console.WriteLine($"{s.SupplierId}) {s.CompanyName}");
 
                     Console.ForegroundColor = ConsoleColor.White;
 
@@ -708,7 +682,6 @@ try
 
                         var isValid = Validator.TryValidateObject(product, context, results, true);
                         if (isValid)
-                        {
                             // check for unique name
                             if (db.Products.Any(p => p.ProductName == product.ProductName))
                             {
@@ -717,7 +690,6 @@ try
                                 results.Add(new ValidationResult("Name exists", new string[] { "ProductName" }));
                             }
                             else
-                            {
                                 try
                                 {
                                     // save product to database
@@ -741,8 +713,6 @@ try
                                     logger.Error($"Error saving product to database: {e.Message}");
                                     Console.ForegroundColor = ConsoleColor.White;
                                 }
-                            }
-                        }
                         if (!isValid)
                         {
                             try
@@ -753,10 +723,8 @@ try
                             catch(Exception) {}
 
                             Console.ForegroundColor = ConsoleColor.Red;
-                            foreach (var result in results)
-                            {
-                                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                            }
+                            foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                             Console.ForegroundColor = ConsoleColor.White;
                         }
                     }
@@ -774,9 +742,7 @@ try
                 logger.Error("Invalid selection");
                 Console.ForegroundColor = ConsoleColor.White;
             }
-        }
         else if(choice == "8") 
-        {
             // -- EDIT PRODUCT --
             try 
             {
@@ -791,10 +757,8 @@ try
                 Console.ForegroundColor = ConsoleColor.DarkRed;
 
                 // displays all products
-                foreach(Product p in query) 
-                {
-                    Console.WriteLine($"{p.ProductId}) {p.ProductName}");
-                }
+                foreach(Product p in query) Console.WriteLine($"{p.ProductId}) {p.ProductName}");
+
                 Console.ForegroundColor = ConsoleColor.White;
 
                 // user selects the product they want to edit
@@ -862,7 +826,6 @@ try
 
                             var isValid = Validator.TryValidateObject(product, context, results, true);
                             if (isValid)
-                            {
                                 try
                                 {
                                     // save changes to database
@@ -881,17 +844,14 @@ try
                                     logger.Error($"Error saving product to database: {e.Message}");
                                     Console.ForegroundColor = ConsoleColor.White;
                                 }
-                            } 
                             else 
                             {
                                 // if product is invalid, set ProductName back to old name
                                 product.ProductName = oldName;
 
                                 Console.ForegroundColor = ConsoleColor.Red;
-                                foreach (var result in results)
-                                {
-                                    logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                                }
+                                foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
                         }
@@ -920,7 +880,6 @@ try
 
                         var isValid = Validator.TryValidateObject(product, context, results, true);
                         if (isValid)
-                        {
                             try
                             {
                                 // save changes to database
@@ -939,17 +898,14 @@ try
                                 logger.Error($"Error saving product to database: {e.Message}");
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
-                        } 
                         else 
                         {
                             // if product is invalid, set Quantity per Unit back to its old value
                             product.QuantityPerUnit = oldQpu;
 
                             Console.ForegroundColor = ConsoleColor.Red;
-                            foreach (var result in results)
-                            {
-                                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                            }
+                            foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                             Console.ForegroundColor = ConsoleColor.White;
                         }
                     } 
@@ -977,7 +933,6 @@ try
 
                         var isValid = Validator.TryValidateObject(product, context, results, true);
                         if (isValid)
-                        {
                             try
                             {
                                 // save changes to database
@@ -995,17 +950,14 @@ try
                                 logger.Error($"Error saving product to database: {e.Message}");
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
-                        } 
                         else 
                         {
                             // if product is invalid, set UnitPrice back to its old value
                             product.UnitPrice = oldUp;
 
                             Console.ForegroundColor = ConsoleColor.Red;
-                            foreach (var result in results)
-                            {
-                                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                            }
+                            foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                             Console.ForegroundColor = ConsoleColor.White;
                         }
                     } 
@@ -1033,7 +985,6 @@ try
 
                         var isValid = Validator.TryValidateObject(product, context, results, true);
                         if (isValid)
-                        {
                             try
                             {   
                                 // save changes to database
@@ -1051,17 +1002,14 @@ try
                                 logger.Error($"Error saving product to database: {e.Message}");
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
-                        } 
                         else 
                         {   
                             // if product is invalid, set UnitsInStock back to its old value
                             product.UnitsInStock = oldUis;
 
                             Console.ForegroundColor = ConsoleColor.Red;
-                            foreach (var result in results)
-                            {
-                                logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                            }
+                            foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                             Console.ForegroundColor = ConsoleColor.White;
                         }
                     } 
@@ -1096,7 +1044,6 @@ try
 
                             var isValid = Validator.TryValidateObject(product, context, results, true);
                             if (isValid)
-                            {
                                 try
                                 {   
                                     // save changes to database
@@ -1114,17 +1061,14 @@ try
                                     logger.Error($"Error saving product to database: {e.Message}");
                                     Console.ForegroundColor = ConsoleColor.White;
                                 }
-                            } 
                             else 
                             {   
                                 // if product is invalid, set Discontinued status back to its old value
                                 product.Discontinued = oldDisc;
 
                                 Console.ForegroundColor = ConsoleColor.Red;
-                                foreach (var result in results)
-                                {
-                                    logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                                }
+                                foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
                         }
@@ -1155,10 +1099,7 @@ try
                         Console.ForegroundColor = ConsoleColor.DarkRed;
 
                         // displays all categories
-                        foreach(Category c in cQuery) 
-                        {
-                            Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
-                        }
+                        foreach(Category c in cQuery) Console.WriteLine($"{c.CategoryId}) {c.CategoryName}");
 
                         Console.ForegroundColor = ConsoleColor.White;
 
@@ -1180,7 +1121,6 @@ try
 
                             var isValid = Validator.TryValidateObject(product, context, results, true);
                             if (isValid)
-                            {
                                 try
                                 {   
                                     // save changes to database
@@ -1199,7 +1139,6 @@ try
                                     logger.Error($"Error saving product to database: {e.Message}");
                                     Console.ForegroundColor = ConsoleColor.White;
                                 }
-                            } 
                             else 
                             {   
                                 // if product is invalid, set Category back to its old value
@@ -1207,10 +1146,8 @@ try
                                 product.CategoryId = oldCId;
 
                                 Console.ForegroundColor = ConsoleColor.Red;
-                                foreach (var result in results)
-                                {
-                                    logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                                }
+                                foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
                         } 
@@ -1241,10 +1178,7 @@ try
                         Console.ForegroundColor = ConsoleColor.DarkRed;
 
                         // displays all suppliers
-                        foreach(Supplier s in sQuery) 
-                        {
-                            Console.WriteLine($"{s.SupplierId}) {s.CompanyName}");
-                        }
+                        foreach(Supplier s in sQuery) Console.WriteLine($"{s.SupplierId}) {s.CompanyName}");
 
                         Console.ForegroundColor = ConsoleColor.White;
 
@@ -1266,7 +1200,6 @@ try
 
                             var isValid = Validator.TryValidateObject(product, context, results, true);
                             if (isValid)
-                            {
                                 try
                                 {   
                                     // save changes to database
@@ -1286,7 +1219,6 @@ try
                                     logger.Error($"Error saving product to database: {e.Message}");
                                     Console.ForegroundColor = ConsoleColor.White;
                                 }
-                            } 
                             else 
                             {   
                                 // if product is invalid, set SupplierId back to its old value
@@ -1294,10 +1226,8 @@ try
                                 product.SupplierId = oldSId;
 
                                 Console.ForegroundColor = ConsoleColor.Red;
-                                foreach (var result in results)
-                                {
-                                    logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
-                                }
+                                foreach (var result in results) logger.Error($"{result.MemberNames.First()} : {result.ErrorMessage}");
+
                                 Console.ForegroundColor = ConsoleColor.White;
                             }
                         } 
@@ -1342,9 +1272,7 @@ try
                 logger.Error("Invalid selection");
                 Console.ForegroundColor = ConsoleColor.White;
             }
-        } 
         else if(choice == "*")
-        {
             // -- DELETE CATEGORY --
             try
             {
@@ -1354,7 +1282,6 @@ try
                 // checks to make sure that there are any empty categories first
                 if(query.Any())
                 {
-
                     Console.WriteLine("\nWhich category would you like to delete?");
 
                     Console.ForegroundColor = ConsoleColor.Green;
@@ -1456,10 +1383,8 @@ try
                 logger.Error("Invalid selection!");
                 Console.ForegroundColor = ConsoleColor.White;
             }
-        }
         else if(choice == "&")
-        {
-            // -- DELETE PRODUCT
+            // -- DELETE PRODUCT --
             try
             {
                 // query gets all products
@@ -1569,12 +1494,9 @@ try
                 logger.Error("Invalid selection!");
                 Console.ForegroundColor = ConsoleColor.White;
             }
-        }
         else if(choice == "q") 
-        {
             // -- QUIT --
             logger.Info("Closing program...");
-        } 
         else 
         {
             // -- INVALID SELECTION --
@@ -1582,9 +1504,7 @@ try
             logger.Error($"'{choice}' is not a valid option!");
             Console.ForegroundColor = ConsoleColor.White;
         }
-        
         Console.WriteLine();
-
     } 
     while (choice.ToLower() != "q");
 }
