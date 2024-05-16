@@ -1,12 +1,7 @@
 ﻿using NLog;
-using System.Linq;
 using NWConsole.Model;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Linq.Expressions;
 
 Console.Clear();
 Console.WriteLine("Hello World!");
@@ -21,7 +16,7 @@ var logger = LogManager.LoadConfiguration(path).GetCurrentClassLogger();
 
 // -- PROGAM START --
 
-logger.Info("Program started");
+logger.Info("Program started\n");
 
 try
 {
@@ -47,9 +42,10 @@ try
 
         if(choice == "1")
         {
-            // DISPLAY ALL CATEGORIES
+            // -- DISPLAY ALL CATEGORIES --
             try 
             {
+                // query gets all categories
                 var query = db.Categories.OrderBy(c => c.CategoryId);
 
                 Console.ForegroundColor = ConsoleColor.Green;
@@ -72,8 +68,9 @@ try
         }
         else if(choice == "2")
         {
-            // DISPLAY ALL CATEGORIES AND THEIR RELATED PRODUCTS
-            try {
+            // -- DISPLAY ALL CATEGORIES AND THEIR RELATED PRODUCTS --
+            try 
+            {
                 // query gets all categories and their Products column
                 var query = db.Categories.Include("Products").OrderBy(p => p.CategoryId);
 
@@ -86,13 +83,20 @@ try
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine($"{c.CategoryName} - {c.Description} {{");
 
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine($"\t{c.Products.Count()} products returned");
+                    // query selets all active products in this category
+                    var pQuery = from p in c.Products where !p.Discontinued orderby p.ProductId select p;
 
-                    Console.ForegroundColor = ConsoleColor.DarkRed;
-                    foreach (Product p in c.Products) 
+                    Console.ForegroundColor = ConsoleColor.Green;
+
+                    Console.WriteLine($"\t{pQuery.Count()} products returned");
+
+                    foreach (Product p in pQuery)
                     {
-                        Console.WriteLine($"\t{p.ProductName}");
+                        Console.ForegroundColor = ConsoleColor.DarkRed;
+                        Console.Write($"\t{p.ProductName}");
+
+                        Console.ForegroundColor = ConsoleColor.DarkGreen;
+                        Console.WriteLine(" (Active)");
                     }
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine("}");
@@ -109,7 +113,7 @@ try
         }
         else if(choice == "3")
         {
-            // DISPLAY CATEGORY AND RELATED PRODUCTS
+            // -- DISPLAY CATEGORY AND RELATED PRODUCTS --
             try 
             {
                 // query gets all categories and their Products column
@@ -144,13 +148,21 @@ try
                 // displays the category and all its Products
                 Console.WriteLine($"\n{category.CategoryName} - {category.Description} {{");
 
+                // query gets all active products in this category
+                var pQuery = from p in category.Products where !p.Discontinued orderby p.ProductId select p;
+
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"\t{category.Products.Count} products returned");
+                Console.WriteLine($"\t{pQuery.Count()} products returned");
 
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                foreach (Product p in category.Products)
+
+                foreach (Product p in pQuery)
                 {
-                    Console.WriteLine($"\t{p.ProductName}");            
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.Write($"\t{p.ProductName}");
+
+                    Console.ForegroundColor = ConsoleColor.DarkGreen;
+                    Console.WriteLine(" (Active)");          
                 }
                 Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine("}");
@@ -174,7 +186,7 @@ try
         }
         else if(choice == "4")
         {
-            // ADD NEW CATEGORY
+            // -- ADD NEW CATEGORY --
             try
             {
                 Category category = new();
@@ -189,7 +201,7 @@ try
                 logger.Info($"Category Name set to \"{category.CategoryName}\"");
 
                 Console.WriteLine("\nEnter the Category Description:");
-                
+
                 // user input for category description
                 category.Description = Console.ReadLine();
 
@@ -251,7 +263,7 @@ try
         }
         else if(choice == "5")
         {
-            // EDIT CATEGORY
+            // -- EDIT CATEGORY --
             try 
             {
                 // query gets all categories
@@ -443,10 +455,9 @@ try
         }
         else if(choice == "6") 
         {
-            // DISPLAY PRODUCTS
+            // -- DISPLAY PRODUCTS --
             try
             {
-
                 // query gets all products
                 var query = db.Products.OrderBy(p => p.ProductId);
 
@@ -490,7 +501,7 @@ try
                         Console.ForegroundColor = ConsoleColor.DarkRed;
                         Console.Write($"{p.ProductId}) {p.ProductName}");
 
-                        Console.ForegroundColor = p.Discontinued ? ConsoleColor.Red : ConsoleColor.Green;
+                        Console.ForegroundColor = p.Discontinued ? ConsoleColor.Red : ConsoleColor.DarkGreen;
                         Console.WriteLine($" ({discontinuedStatus})");
                     }
                     Console.ForegroundColor = ConsoleColor.White;
@@ -546,7 +557,7 @@ try
 
                         string discontinuedString = product.Discontinued ? "Discontinued" : "Active";
 
-                        Console.ForegroundColor = product.Discontinued ? ConsoleColor.Red : ConsoleColor.Green;
+                        Console.ForegroundColor = product.Discontinued ? ConsoleColor.Red : ConsoleColor.DarkGreen;
                         Console.WriteLine($"\n\t{discontinuedString}");
 
                         Console.ForegroundColor = ConsoleColor.DarkRed;
@@ -579,7 +590,8 @@ try
         else if(choice == "7")
         {
             // -- ADD NEW PRODUCT --
-            try {
+            try 
+            {
                 Product product = new();
 
                 Console.WriteLine("\nEnter Product Name:");
@@ -764,7 +776,7 @@ try
         }
         else if(choice == "8") 
         {
-            // EDIT PRODUCT
+            // -- EDIT PRODUCT --
             try 
             {
                 // query gets all products
