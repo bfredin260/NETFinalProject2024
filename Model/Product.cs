@@ -14,7 +14,7 @@ namespace NWConsole.Model
         public int ProductId { get; set; }
 
         [Required(ErrorMessage = "Needs a name")]
-        [MaxLength(40, ErrorMessage = $"Product Name can't be longer than 40 characters!")]
+        [MaxLength(40, ErrorMessage = "Product Name can't be longer than 40 characters!")]
         public string ProductName { get; set; }
 
         [Required(ErrorMessage = "Needs a Supplier")]
